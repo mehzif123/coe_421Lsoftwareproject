@@ -6,7 +6,7 @@ import java.util.Map;
  * GameController.java
  * Handles all command dispatch and game-logic responses.
  * Movement, item actions, puzzles, and win condition live here.
- * Display helpers (room text, options) are delegated to other classes.
+ * Display helpers are delegated to other classes.
  */
 public class GameController {
 
@@ -22,56 +22,49 @@ public class GameController {
         this.opts   = new OptionsProvider(player, state);
     }
 
-    // ------------------------------------------------------------------ //
     //  Top-level dispatch
-    // ------------------------------------------------------------------ //
 
-    public boolean handleCommand(String cmd) {
+    public void handleCommand(String cmd) {
         switch (cmd) {
-            case "d": case "u": case "e": case "we":
-                return move(cmd);
+            case "d": case "u": case "e": case "w":
+                move(cmd);
+                break;
             case "lo":
                 showCurrentRoom();
-                return true;
+                break;
             case "i":
                 System.out.println("Inventory: " + player.inventoryText());
-                return false;
+                break;
             case "st":
                 printStatus();
-                return false;
+                break;
             case "op lk":
                 doOpenLocker();
-                return false;
+                break;
             case "ta su":
                 doTakeSuit();
-                return false;
+                break;
             case "ta med":
                 doTakeMedkit();
-                return false;
+                break;
             case "wr su":
                 doWearSuit();
-                return false;
+                break;
             case "ex pa":
                 doExaminePanel();
-                return false;
-            case "so oxygen":
+                break;
+            case "so ox":
                 doSolveOxygen();
-                return false;
+                break;
             case "ta co":
                 doTakeCore();
-                return false;
-            case "win":
-                doWin();
-                return false;
+                break;
             default:
                 System.out.println("The current does not understand that command.");
-                return false;
         }
     }
 
-    // ------------------------------------------------------------------ //
     //  Display helpers
-    // ------------------------------------------------------------------ //
 
     public void showCurrentRoom() {
         Room r = player.currentRoom;
@@ -79,7 +72,9 @@ public class GameController {
         System.out.println(r.description);
         System.out.println("Exits: " + exitText(r));
         describeContext();
-        showOptions();
+        if (player.currentRoom.name.equals("Surface Platform") && state.coreTaken && !state.gameWon) {
+            doWin();
+        }
     }
 
     public void showOptions() {
@@ -127,50 +122,30 @@ public class GameController {
                 case "d":  parts.add("down(d)");   break;
                 case "u":  parts.add("up(u)");     break;
                 case "e":  parts.add("east(e)");   break;
-                case "we": parts.add("west(we)");  break;
+                case "w":  parts.add("west(w)");   break;
             }
         }
         return String.join(", ", parts) + ".";
     }
 
-    // ------------------------------------------------------------------ //
     //  Movement
-    // ------------------------------------------------------------------ //
 
-    private boolean move(String dir) {
+    private void move(String dir) {
         String next = player.currentRoom.exits.get(dir);
         if (next == null) {
             System.out.println("You cannot go that way.");
-            return false;
+            return;
         }
         if (player.currentRoom.name.equals("Pressure Gate") && dir.equals("e") && !state.gateUnlocked) {
             System.out.println("The pressure gate is still locked.");
-            return false;
+            return;
         }
         player.currentRoom = rooms.get(next);
-        if (checkAutomaticVictory()) {
-            return true;
-        }
         showCurrentRoom();
-        return true;
     }
 
-    private boolean checkAutomaticVictory() {
-        if (player.currentRoom.name.equals("Surface Platform") && state.coreTaken) {
-            state.gameWon = true;
-            state.running = false;
-            System.out.println("\nSurface Platform");
-            System.out.println("The cold sea air hits your face as you step onto the deck.");
-            System.out.println("With the Abyssal Core secured, the long, hard journey back begins to feel worth every risk.");
-            System.out.println("Mission complete.");
-            return true;
-        }
-        return false;
-    }
-
-    // ------------------------------------------------------------------ //
     //  Item & puzzle actions
-    // ------------------------------------------------------------------ //
+    
 
     private void doOpenLocker() {
         if (!player.currentRoom.name.equals("Equipment Locker")) {
@@ -247,7 +222,11 @@ public class GameController {
         if (player.currentRoom.name.equals("Surface Platform") && state.coreTaken) {
             state.gameWon = true;
             state.running = false;
-            System.out.println("You escape with the Abyssal Core. Mission complete.");
+            System.out.println("\n" + "=".repeat(50));
+            System.out.println("\033[1m         MISSION ACCOMPLISHED!         \033[0m");
+            System.out.println("\033[1m     You have recovered the Abyssal Core!     \033[0m");
+            System.out.println("\033[1m         Humanity is saved!         \033[0m");
+            System.out.println("=".repeat(50));
         } else {
             System.out.println("You have not completed the mission yet.");
         }

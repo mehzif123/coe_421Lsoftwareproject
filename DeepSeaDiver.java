@@ -6,9 +6,6 @@ import java.util.Scanner;
  * Application entry point.
  * Wires all components together and runs the main input loop.
  *
- * HOW TO RUN:
- *   javac -d out src/*.java
- *   java  -cp out DeepSeaDiver
  *
  * OBJECTIVE:
  *   Recover the Abyssal Core from the trench and return to the surface alive.
@@ -36,28 +33,26 @@ public class DeepSeaDiver {
         game.showCurrentRoom();
 
         while (state.running) {
+            game.showOptions();
             System.out.print("\n> ");
             if (!scanner.hasNextLine()) break;
 
             String raw = scanner.nextLine().trim();
 
-            // Empty input — re-show options as a hint
+            // Empty input : re-show options as a hint
             if (raw.isEmpty()) {
                 game.showOptions();
                 continue;
             }
 
             String cmd = parser.parse(raw);
-            boolean optionsShown = game.handleCommand(cmd);
-            if (state.running && !optionsShown) {
-                game.showOptions();
-            }
+            game.handleCommand(cmd);
         }
     }
 
     private void printIntro() {
         System.out.println("============================================");
-        System.out.println("              DEEP SEA DIVER               ");
+        System.out.println("               DEEP SEA DIVER               ");
         System.out.println("============================================");
         System.out.println("Recover the Abyssal Core and return alive.");
         System.out.println("Type the short commands shown in brackets,");

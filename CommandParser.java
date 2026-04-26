@@ -3,7 +3,7 @@ import java.util.Map;
 
 /**
  * CommandParser.java
- * Normalises raw player input into canonical short-form commands.
+ * Normalises raw player input into  short form commands.
  * All synonym mappings live here so adding new aliases never
  * requires touching GameController.
  */
@@ -15,7 +15,7 @@ public class CommandParser {
         ALIASES.put("down",                  "d");
         ALIASES.put("up",                    "u");
         ALIASES.put("east",                  "e");
-        ALIASES.put("west",                  "we");
+        ALIASES.put("west",                  "w");
         ALIASES.put("look",                  "lo");
         ALIASES.put("inventory",             "i");
         ALIASES.put("status",                "st");
@@ -26,7 +26,7 @@ public class CommandParser {
         ALIASES.put("wear suit",             "wr su");
         ALIASES.put("wear reinforced suit",  "wr su");
         ALIASES.put("examine panel",         "ex pa");
-        ALIASES.put("solve oxygen",          "so oxygen");
+        ALIASES.put("solve oxygen",          "so ox");
         ALIASES.put("take core",             "ta co");
         ALIASES.put("win game",              "win");
     }

@@ -24,15 +24,20 @@ public class OptionsProvider {
 
         switch (room) {
             case "Surface Platform":
-                opts.add("down(d)");
-                opts.add("look(lo)");
-                opts.add("status(st)");
+                if (!state.coreTaken) {
+                    opts.add("down(d)");
+                    opts.add("look(lo)");
+                    opts.add("status(st)");
+                } else {
+                    opts.add("look(lo)");
+                    opts.add("status(st)");
+                }
                 break;
 
             case "Airlock":
                 opts.add("down(d)");
                 opts.add("up(u)");
-                opts.add("west(we)");
+                opts.add("west(w)");
                 break;
 
             case "Equipment Locker":
@@ -58,7 +63,7 @@ public class OptionsProvider {
             case "Pressure Gate":
                 if (!state.gateUnlocked) {
                     opts.add("examine panel(ex pa)");
-                    opts.add("solve oxygen(so oxygen)");
+                    opts.add("solve oxygen(so ox)");
                     opts.add("up(u)");
                 } else {
                     opts.add("east(e)");
@@ -69,10 +74,10 @@ public class OptionsProvider {
             case "Abyssal Trench":
                 if (!state.coreTaken) {
                     opts.add("take core(ta co)");
-                    opts.add("west(we)");
+                    opts.add("west(w)");
                     opts.add("look(lo)");
                 } else {
-                    opts.add("west(we)");
+                    opts.add("west(w)");
                     opts.add("inventory(i)");
                     opts.add("status(st)");
                 }
