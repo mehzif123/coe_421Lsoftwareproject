@@ -6,14 +6,24 @@ import java.util.Map;
  * GameController.java
  * Handles all command dispatch and game-logic responses.
  * Movement, item actions, puzzles, and win condition live here.
- * Display helpers are delegated to other classes.
+ * Display helpers (room text, options) are delegated to other classes.
+ *
+ * DESIGN PATTERN — Observer (Subject role):
+ *   GameController is the Subject. It maintains a list of
+ *   GameEventListener observers (GuardNPC, OxygenTimer).
+ *   Whenever a meaningful event occurs (room change, gate unlock, etc.)
+ *   GameController calls notifyObservers() so all registered listeners
+ *   react independently — decoupling game logic from entity behavior.
  */
 public class GameController {
 
-    private final Player          player;
-    private final GameState       state;
+    private final Player            player;
+    private final GameState         state;
     private final Map<String, Room> rooms;
-    private final OptionsProvider opts;
+    private final OptionsProvider   opts;
+
+    // Observer list — populated by DeepSeaDiver at startup
+    private final List<GameEventListener> observers = new ArrayList<>();
 
     public GameController(Player player, GameState state, Map<String, Room> rooms) {
         this.player = player;
@@ -22,11 +32,33 @@ public class GameController {
         this.opts   = new OptionsProvider(player, state);
     }
 
+    // ------------------------------------------------------------------ //
+    //  Observer pattern — Subject methods
+    // ------------------------------------------------------------------ //
+
+    /** Register an observer to receive game events. */
+    public void addObserver(GameEventListener listener) {
+        observers.add(listener);
+    }
+
+    /**
+     * Notify all registered observers of an event.
+     * Called from the main game thread; observers may forward
+     * state to their own background threads.
+     */
+    private void notifyObservers(String eventType, String detail) {
+        for (GameEventListener listener : observers) {
+            listener.onEvent(eventType, detail);
+        }
+    }
+
+    // ------------------------------------------------------------------ //
     //  Top-level dispatch
+    // ------------------------------------------------------------------ //
 
     public void handleCommand(String cmd) {
         switch (cmd) {
-            case "d": case "u": case "e": case "w":
+            case "d": case "u": case "e": case "we":
                 move(cmd);
                 break;
             case "lo":
@@ -64,7 +96,9 @@ public class GameController {
         }
     }
 
+    // ------------------------------------------------------------------ //
     //  Display helpers
+    // ------------------------------------------------------------------ //
 
     public void showCurrentRoom() {
         Room r = player.currentRoom;
@@ -72,9 +106,6 @@ public class GameController {
         System.out.println(r.description);
         System.out.println("Exits: " + exitText(r));
         describeContext();
-        if (player.currentRoom.name.equals("Surface Platform") && state.coreTaken && !state.gameWon) {
-            doWin();
-        }
     }
 
     public void showOptions() {
@@ -122,13 +153,15 @@ public class GameController {
                 case "d":  parts.add("down(d)");   break;
                 case "u":  parts.add("up(u)");     break;
                 case "e":  parts.add("east(e)");   break;
-                case "w":  parts.add("west(w)");   break;
+                case "we": parts.add("west(we)");  break;
             }
         }
         return String.join(", ", parts) + ".";
     }
 
+    // ------------------------------------------------------------------ //
     //  Movement
+    // ------------------------------------------------------------------ //
 
     private void move(String dir) {
         String next = player.currentRoom.exits.get(dir);
@@ -141,11 +174,19 @@ public class GameController {
             return;
         }
         player.currentRoom = rooms.get(next);
+        // Observer: notify all entities that player moved to a new room
+        notifyObservers("ROOM_ENTER", player.currentRoom.name);
+        // Check for win condition
+        if (next.equals("Surface Platform") && state.coreTaken) {
+            doWin();
+            return;
+        }
         showCurrentRoom();
     }
 
+    // ------------------------------------------------------------------ //
     //  Item & puzzle actions
-    
+    // ------------------------------------------------------------------ //
 
     private void doOpenLocker() {
         if (!player.currentRoom.name.equals("Equipment Locker")) {
@@ -199,6 +240,8 @@ public class GameController {
         if (player.currentRoom.name.equals("Pressure Gate")) {
             state.gateUnlocked = true;
             System.out.println("The panel flashes green. The pressure gate unlocks and slides eastward.");
+            // Observer: notify entities that gate was unlocked (drone calms down)
+            notifyObservers("GATE_UNLOCKED", "Pressure Gate");
         } else {
             System.out.println("There is no oxygen puzzle here.");
         }
@@ -216,17 +259,14 @@ public class GameController {
         state.coreTaken = true;
         player.add("abyssal core");
         System.out.println("You lift the Abyssal Core from its pedestal. The trench seems to recoil around you.");
+        notifyObservers("CORE_TAKEN", "Abyssal Trench");
     }
 
     private void doWin() {
         if (player.currentRoom.name.equals("Surface Platform") && state.coreTaken) {
             state.gameWon = true;
             state.running = false;
-            System.out.println("\n" + "=".repeat(50));
-            System.out.println("\033[1m         MISSION ACCOMPLISHED!         \033[0m");
-            System.out.println("\033[1m     You have recovered the Abyssal Core!     \033[0m");
-            System.out.println("\033[1m         Humanity is saved!         \033[0m");
-            System.out.println("=".repeat(50));
+            System.out.println("You escape with the Abyssal Core. Mission complete.");
         } else {
             System.out.println("You have not completed the mission yet.");
         }

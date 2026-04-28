@@ -37,7 +37,7 @@ public class OptionsProvider {
             case "Airlock":
                 opts.add("down(d)");
                 opts.add("up(u)");
-                opts.add("west(w)");
+                opts.add("west(we)");
                 break;
 
             case "Equipment Locker":
@@ -74,10 +74,10 @@ public class OptionsProvider {
             case "Abyssal Trench":
                 if (!state.coreTaken) {
                     opts.add("take core(ta co)");
-                    opts.add("west(w)");
+                    opts.add("west(we)");
                     opts.add("look(lo)");
                 } else {
-                    opts.add("west(w)");
+                    opts.add("west(we)");
                     opts.add("inventory(i)");
                     opts.add("status(st)");
                 }

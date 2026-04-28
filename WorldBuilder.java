@@ -31,14 +31,14 @@ public class WorldBuilder {
 
         airlock.exits.put("u",  "Surface Platform");
         airlock.exits.put("d",  "Pressure Gate");
-        airlock.exits.put("w", "Equipment Locker");
+        airlock.exits.put("we", "Equipment Locker");
 
         locker.exits.put("e",   "Airlock");
 
         gate.exits.put("u",     "Airlock");
         gate.exits.put("e",     "Abyssal Trench");
 
-        trench.exits.put("w",  "Pressure Gate");
+        trench.exits.put("we",  "Pressure Gate");
 
         Map<String, Room> rooms = new HashMap<>();
         rooms.put(surface.name, surface);
