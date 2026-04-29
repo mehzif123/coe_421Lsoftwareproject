@@ -26,7 +26,7 @@ public class CommandParser {
         ALIASES.put("wear suit",             "wr su");
         ALIASES.put("wear reinforced suit",  "wr su");
         ALIASES.put("examine panel",         "ex pa");
-        ALIASES.put("solve oxygen",          "so oxygen");
+        ALIASES.put("solve oxygen",          "so ox");
         ALIASES.put("take core",             "ta co");
         ALIASES.put("win game",              "win");
     }
